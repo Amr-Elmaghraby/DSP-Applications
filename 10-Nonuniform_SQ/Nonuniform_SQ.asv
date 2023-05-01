@@ -19,9 +19,9 @@ y = zeros(1,M);
 y(1) = min(samples);
 y(M) = max(samples);
 n= zeros(1,M);
-we=100;
-zzz =zeros(1,we);
-for u=1:we
+itr=100;   %% Number of iterations
+MSQE =zeros(1,itr);
+for u=1:itr
     for i = 2:M-1
         sum =0;
         nu =0;
@@ -43,17 +43,68 @@ for u=1:we
     end
 
 
-    [a, zz]= quantiz(samples,DB,y);
+    [a, quan_samples]= quantiz(samples,DB,y);
 
     for i = 1:length(samples)    
-        zzz(u) = zz(i) -samples(i) + zzz(u);
+        MSQE(u) = abs(quan_samples(i) -samples(i)) + MSQE(u);
     end
-    zzz(u) = (zzz(u)/length(samples))^2;
+    MSQE(u) = (MSQE(u)/length(samples))^2;
 
 
 end
+figure;
+plot(MSQE);
+xlabel('index');
+ylabel('MSQE values');
+title('Mean Square Quantization Error');
+figure;
+subplot(2,1,1);
+plot(samples);
+xlabel('index');
+ylabel('MSQE values');
+title('Mean Square Quantization Error');
+subplot(2,1,2);
+plot(quan_samples);
+xlabel('index');
+ylabel('Quantized values');
+title('Quantized Values');
+%%
+% Define the Poisson distribution
+lambda = 3;
 
-plot(zzz);
+% Generate 1000 random samples from the Poisson distribution
+num_samples = 1000;
+poisson_samples = poissrnd(lambda, 1, num_samples);
+
+% Define the number of bits for quantization
+n = 3;
+
+% Define the quantization table using a logarithmic mapping function
+Q = logspace(0, log10(max(poisson_samples)), 2^n);
+
+% Quantize the Poisson samples using the quantization table
+quantized_samples = zeros(size(poisson_samples));
+for i = 1:length(poisson_samples)
+    [~, index] = min(abs(Q - poisson_samples(i)));
+    quantized_samples(i) = Q(index);
+end
+
+% Compute the mean squared error between the original and quantized samples
+mse = mean((poisson_samples - quantized_samples).^2);
+
+% Display the MSE and a histogram of the original and quantized samples
+fprintf('MSE: %.4f\n', mse);
+figure;
+subplot(2,1,1);
+plot(poisson_samples);
+title('Original Poisson samples');
+xlabel('Sample value');
+ylabel('Frequency');
+subplot(2,1,2);
+plot(quantized_samples);
+title('Quantized Poisson samples');
+xlabel('Quantized value');
+ylabel('Frequency');
 
 
 
