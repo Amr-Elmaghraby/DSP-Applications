@@ -1,0 +1,53 @@
+% Read the image
+img = imread('image.jpg');
+% Convert the image to grayscale
+if size(img, 3) == 3
+    img = rgb2gray(img);
+end
+
+% Define block size
+block_size = 4;
+
+% Divide the image into blocks
+num_rows = floor(size(img, 1) / block_size);
+num_cols = floor(size(img, 2) / block_size);
+img_blocks = zeros(num_rows*num_cols, block_size^2);
+for i = 1:num_rows
+    for j = 1:num_cols
+        block = img((i-1)*block_size+1:i*block_size, (j-1)*block_size+1:j*block_size);
+        img_blocks((i-1)*num_cols+j, :) = block(:)';
+    end
+end
+
+% Design codebooks of different sizes
+codebook_sizes = [16, 64, 256, 1024];
+for k = 1:length(codebook_sizes)
+    % Train codebook
+    [~, codebook] = kmeans(double(img_blocks), codebook_sizes(k));
+    
+    % Quantize image using codebook
+    assigned_codewords = knnsearch(codebook, double(img_blocks));
+    
+    % Reconstruct image using assigned codewords and codebook entries
+    img_reconstructed = zeros(size(img));
+    for i = 1:num_rows
+        for j = 1:num_cols
+            codeword_idx = assigned_codewords((i-1)*num_cols+j);
+            codeword = codebook(codeword_idx, :);
+            img_reconstructed((i-1)*block_size+1:i*block_size, (j-1)*block_size+1:j*block_size) = reshape(codeword, [block_size, block_size]);
+        end
+    end
+    
+    % Calculate bit rate and compression ratio
+    bit_rate = log2(codebook_sizes(k)) / block_size^2;
+    compression_ratio = numel(img) / (numel(assigned_codewords)*bit_rate + numel(codebook)*8);
+    
+    % Display results
+    fprintf('Codebook size: %d\n', codebook_sizes(k));
+    fprintf('Bit rate: %f\n', bit_rate);
+    fprintf('Compression ratio: %f\n', compression_ratio);
+    figure, imshow(img_reconstructed)
+end 
+
+
+
