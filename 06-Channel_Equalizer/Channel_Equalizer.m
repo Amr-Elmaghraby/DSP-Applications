@@ -83,10 +83,33 @@ end
 % divide by averaging number
 W_LMS = W_LMS ./ avr;
 
+%% plotting channel and equalizer Response
+figure
 
+plot(abs(fftshift(fft(h_n(1,3:end-2)))))
+hold on
 
+plot(abs(fftshift(fft(W_wiener))))
 
+plot(abs(fftshift(fft(W_steepest(:,1)))))
 
+plot(abs(fftshift(fft(W_LMS(:,1)))))
+legend("Original channel","Wiener EQ","SD EQ","LMS EQ")
+
+figure
+freqz(h_n(1,3:end-2) , 1 )
+
+figure
+freqz(W_wiener , 1 )
+
+figure
+freqz(W_steepest(:,1) , 1 )
+
+figure
+freqz(W_LMS(:,1) , 1 )
+
+figure
+freqz(conv(h_n , W_steepest(:,1) ) , 1 )
 
 
 

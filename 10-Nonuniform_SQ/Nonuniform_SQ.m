@@ -11,7 +11,7 @@ plot(n,pos);
 figure;
 plot(samples);
 %% Calculate Decision boundaries and Reconstruction levels
-M  = 10 ;  % number of levels
+M  = 6 ;  % number of levels
 Nm_bon = M - 2; % number of decision boundaries
 Delta = (max(samples) - min(samples)) / Nm_bon;  % Step size
 DB = min(samples):Delta:max(samples);  % Initialize Decision boundaries as uniform destribution

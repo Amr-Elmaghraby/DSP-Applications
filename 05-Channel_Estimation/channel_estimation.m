@@ -92,8 +92,10 @@ figure
  hold on 
  stem(W_avr_LMS ,'^','DisplayName','LMS estimation')
   legend() 
-  
-
+figure
+freqz(W_avr_LMS,1)
+figure
+freqz(h_n,1)
 
 
 
