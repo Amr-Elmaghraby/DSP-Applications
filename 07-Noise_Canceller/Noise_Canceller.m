@@ -1,38 +1,38 @@
 %Clear
 close all;clear all;clc;
 
-%% First part (Noise Cancellation on audio)
-% Record Audio
+% First part (Noise Cancellation on audio)
+%Record Audio
 Fs = 48000; % sampling rate
-% Create an audiorecorder object
+%Create an audiorecorder object
 recObj = audiorecorder(Fs, 16, 1);
 
-% Record for 5 seconds
+%Record for 5 seconds
 disp('Start speaking.');
 recordblocking(recObj, 5);
 disp('End of Recording.');
 
-% Get the recorded data and plot it
+%Get the recorded data and plot it
 d_n = getaudiodata(recObj);
 plot(d_n);
 sound(d_n,Fs);
 pause(5);
-% Record Noise
+%Record Noise
 Fs = 48000; % sampling rate
-% Create an audiorecorder object
+%Create an audiorecorder object
 recObj = audiorecorder(Fs, 16, 1);
 
-% Record for 5 seconds
+%Record for 5 seconds
 disp('Start speaking.');
 recordblocking(recObj, 5);
 disp('End of Recording.');
 
-% Get the recorded data and plot it
+%Get the recorded data and plot it
 u_n = getaudiodata(recObj);
 plot(u_n);
 sound(u_n,Fs);
 
-%
+
 W = Wiener_Filter(u_n, d_n, 11);
 
 y_n = filter(W,1,u_n);
@@ -40,7 +40,7 @@ y_n = filter(W,1,u_n);
 op = d_n - y_n;
 sound(op,Fs);
 
-%
+
 t= linspace(0,5,Fs*5)';
 
 plot(t,d_n);
@@ -49,40 +49,6 @@ plot(t,op);
 figure;
 plot(t,u_n);
 ylim([-0.3 0.2]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
