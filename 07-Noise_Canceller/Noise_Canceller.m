@@ -1,34 +1,38 @@
 %Clear
-close all;clear all;clc;
+close all;clc;
 
 %% First part (Noise Cancellation on audio)
 % Record Audio
 Fs = 48000; % sampling rate
 % Create an audiorecorder object
-recObj = audiorecorder(Fs, 16, 1);
+% recObj = audiorecorder(Fs, 16, 1);
+
+[d_n, Fs] = audioread('sound.m4a');
 
 % Record for 5 seconds
 disp('Start speaking.');
-recordblocking(recObj, 5);
+%recordblocking(recObj, 5);
 disp('End of Recording.');
 
 % Get the recorded data and plot it
-d_n = getaudiodata(recObj);
+% d_n = getaudiodata(recObj);
 plot(d_n);
 sound(d_n,Fs);
 pause(5);
 % Record Noise
 Fs = 48000; % sampling rate
 % Create an audiorecorder object
-recObj = audiorecorder(Fs, 16, 1);
+%recObj = audiorecorder(Fs, 16, 1);
 
 % Record for 5 seconds
 disp('Start speaking.');
-recordblocking(recObj, 5);
+%recordblocking(recObj, 5);
 disp('End of Recording.');
 
+[u_n, Fs] = audioread('noise.m4a');
+u_n=u_n(1:length(d_n));
 % Get the recorded data and plot it
-u_n = getaudiodata(recObj);
+%u_n = getaudiodata(recObj);
 plot(u_n);
 sound(u_n,Fs);
 
@@ -49,47 +53,6 @@ plot(t,op);
 figure;
 plot(t,u_n);
 ylim([-0.3 0.2]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 %% Second part (Chirp signal)
 
@@ -124,17 +87,17 @@ v_n = filter(half_LPF,1,u_n);
 % Add v_n to the chirp signal 
 d_n = s_n + v_n; 
 
-%% Wiener Filter
+% Wiener Filter
 n_order = 11;
 [Wiener_W, Wiener_J_min] = Wiener_Filter(u_n , d_n ,n_order);
 
-%% Steepest Descent 
+% Steepest Descent 
 % Number of iteration
 itr = 4000;
 [ Steepest_Descent_W, Steepest_Descent_J ,stb, alpha] = Steepest_Descent( u_n , d_n ,n_order,itr ,0.001);
 Steepest_J_min = min(Steepest_Descent_J);
 
-%% LMS 
+% LMS 
 LMS_av = zeros(11,100);
 %Averaging over 100 iterations
 itr_LMS = 100;
