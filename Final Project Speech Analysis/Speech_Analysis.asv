@@ -10,7 +10,7 @@ disp('stop recording')
 play(recobj);
 % get the data form the record
 data = getaudiodata(recobj);
-%plot the data 
+%plot the data
 plot(data)
 title('original speech')
 % Define the frame size
@@ -22,17 +22,46 @@ n_frames=length(data)/frame_size;
 %% 2.Start Analysis
 
 %loop to simulate the data come in stream (realtime)
+PWR=zeros(1,n_frames);
 
-for i=0:n_frames
-    
-    frame=data( (i*frame_size)+1 :(i+1)*frame_size);
-    if(i==90)
-        plot(frame)
-        break
+for i=1:n_frames
+ 
+    % get a frame from the data
+    frame=data( ((i-1)*frame_size)+1 :i*frame_size);
+    AC = xcorr(frame);
+    AC= AC(160:end);
+    if(i==1)
+        PWR(i)=sum(frame.^2);
+        [~, idx] = sort(AC,'descend');
+        plot(AC);
+        figure;
+        plot(frame);
+        for j=1:length(idx)
+            if(idx(j+1)>idx(j)+1)
+                pitch = idx(j+1);
+                break;
+            end
+        end 
+        % check pitch period is within average range for being voiced  
+        pitch_T = ((pitch/frame_size)*frame_time)*e3;
+        if(pitch_T>2.5e-3) 
+            disp("voiced");
+        else
+            disp("Unvoiced");
+        end
+            
+        break;
     end
+    % decide whether the frame is voiced or unvoiced
     
-    
-    
-    
-end    
+end
+
+
+
+
+
+
+
+
+
 
