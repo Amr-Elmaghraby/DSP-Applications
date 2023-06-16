@@ -30,7 +30,7 @@ for i=1:n_frames
     frame=data( ((i-1)*frame_size)+1 :i*frame_size);
     AC = xcorr(frame);
     AC= AC(160:end);
-    if(i==115)
+    if(i==100)
         PWR(i)=sum(frame.^2);
         [~, idx] = sort(AC,'descend');
         plot(AC);
@@ -51,9 +51,15 @@ for i=1:n_frames
             %Long-term LPC parameters for voiced & unvoiced
             x= [frame(1) frame(pitch:end)];
             L_LPC = lpc(x,12);
+            z=filter(L_LPC,1,frame);
+            w=xcorr(z);
+            S_LPC= lpc(frame,12);
+            z2 = filter(S_LPC,1,z);
+            w2=xcorr(z2);
             
         else
             disp("Unvoiced");
+            S_LPC= lpc(frame,12);
         end
             
         break;
@@ -63,8 +69,10 @@ for i=1:n_frames
 end
 
 
-
-
+%%
+plot(w(160:end));
+figure;
+plot(w2(160:end));
 
 
 
