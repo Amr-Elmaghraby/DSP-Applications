@@ -10,7 +10,7 @@ disp('stop recording')
 play(recobj);
 % get the data form the record
 data = getaudiodata(recobj);
-%plot the data 
+%plot the data
 plot(data)
 title('original speech')
 % Define the frame size
@@ -22,44 +22,52 @@ n_frames=length(data)/frame_size;
 %% 2.Start Analysis
 
 %loop to simulate the data come in stream (realtime)
-% energy=zeros(1,n_frames);
+PWR=zeros(1,n_frames);
 
-for i=0:n_frames-1
-    
+for i=1:n_frames
+ 
     % get a frame from the data
-    frame=data( (i*frame_size)+1 :(i+1)*frame_size);
-    if(i==140)
-        figure
-        plot(frame)
-           [acs,lags] = xcorr(frame,'coeff');
-           
-        figure
-        plot(lags,acs)
-        grid
-        xlabel('Lags')
-        ylabel('Normalized Autocorrelation')
-        ylim([-0.1 1.1])
+    frame=data( ((i-1)*frame_size)+1 :i*frame_size);
+    AC = xcorr(frame);
+    AC= AC(160:end);
+    if(i==115)
+        PWR(i)=sum(frame.^2);
+        [~, idx] = sort(AC,'descend');
+        plot(AC);
+        figure;
+        plot(frame);
+        for j=1:length(idx)
+            if(idx(j+1)>idx(j)+1)
+                pitch = idx(j+1);
+                break;
+            end
+        end 
 
-        
-         break
+ 
+        % check pitch period is within average range for being voiced  
+        pitch_T = ((pitch/frame_size)*frame_time)*1e3;
+        if(pitch_T>2.5) 
+            disp("voiced");
+            %Long-term LPC parameters for voiced & unvoiced
+            x= [frame(1) frame(pitch-5:pitch+5)];
+            L_LPC = lpc(x,12);
+            
+        else
+            disp("Unvoiced");
+        end
+            
+        break;
     end
-
-%         energy(i+1)=sum(frame.^2);
-
-
-
-    
-     
     % decide whether the frame is voiced or unvoiced
-     
-        
     
-    
-    
-    
-   
-    
-   
-    
-end    
+end
+
+
+
+
+
+
+
+
+
 
