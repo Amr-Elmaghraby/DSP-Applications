@@ -22,24 +22,44 @@ n_frames=length(data)/frame_size;
 %% 2.Start Analysis
 
 %loop to simulate the data come in stream (realtime)
-zcr=zeros(1,n_frames);
+% energy=zeros(1,n_frames);
 
-for i=0:n_frames
+for i=0:n_frames-1
     
     % get a frame from the data
     frame=data( (i*frame_size)+1 :(i+1)*frame_size);
+    if(i==140)
+        figure
+        plot(frame)
+           [acs,lags] = xcorr(frame,'coeff');
+           
+        figure
+        plot(lags,acs)
+        grid
+        xlabel('Lags')
+        ylabel('Normalized Autocorrelation')
+        ylim([-0.1 1.1])
+
+        
+         break
+    end
+
+%         energy(i+1)=sum(frame.^2);
+
+
+
     
-    zcr(i)=zerocrossrate(frame);
-    
+     
     % decide whether the frame is voiced or unvoiced
+     
+        
     
     
     
     
    
     
-    
-    
+   
     
 end    
 
