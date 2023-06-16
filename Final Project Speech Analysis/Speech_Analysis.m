@@ -19,7 +19,7 @@ frame_size=(frame_time/recDuration)*length(data);
 frame=zeros(frame_size,1);
 n_frames=length(data)/frame_size;
 
-%% 2.Start Analysis
+%% 2.Start Analysis (TX)
 
 %loop to simulate the data come in stream (realtime)
 PWR=zeros(1,n_frames);
@@ -33,14 +33,18 @@ for i=1:n_frames
  
     % get a frame from the data
     frame=data( ((i-1)*frame_size)+1 :i*frame_size);
-    AC = xcorr(frame);
-    AC= AC(160:end);
+    
     if(i==100)
-        PWR(i)=sum(frame.^2);
+        AC = xcorr(frame);
+        
+%         plot(frame);
+        figure
+        plot(AC)
+        
+        AC= AC(160:end);
+        PWR(i)=sum(frame.^2)/frame_size;
         [~, idx] = sort(AC,'descend');
-        plot(AC);
-        figure;
-        plot(frame);
+       
         for j=1:length(idx)-1
             if(idx(j+1)>idx(j)+1)
                 pitch = idx(j+1);
@@ -55,12 +59,11 @@ for i=1:n_frames
             disp("voiced");
             
             %Long-term LPC parameters for voiced & unvoiced
-            frame_x = [ frame(1:5); frame(pitch-5:pitch+5)];
+            frame_x = [frame(1) ; frame(pitch-5:end)];
             L_lpc = lpc(frame_x,lpc_taps);
-            [frame_x ,L_final ]=filter(L_lpc,1,frame_x,L_intial);
+            [frame ,L_final ]=filter(L_lpc,1,frame,L_intial);
             L_intial=L_final;
-            frame(1:5) = frame_x(1:5);
-            frame(pitch-5:pitch+5)= frame_x(6:end);
+           
             frame_ac=xcorr(frame);
             figure
             plot(frame_ac)
@@ -74,16 +77,54 @@ for i=1:n_frames
         frame_ac=xcorr(frame);
         figure
         plot(frame_ac)
+
+
+        frame = 2 * (frame - min(frame)) / (max(frame) - min(frame)) - 1;
+
         
-        % Get log area ratio of coff LPC
-        L_lar = rc2lar(L_lpc);
-        S_lar = rc2lar(S_lpc);
+        figure
+        plot(frame)
         
+%        % Get log area ratio of coff LPC
+%         L_lar = rc2lar(L_lpc);
+%         S_lar = rc2lar(S_lpc);
+        break;
+%          
     end
     
     
 end
 
+%% 3.Generate codebooks
+
+cb_size=1024;
+
+cb_noise=zeros(length(frame),cb_size);
+for i=1:cb_size
+    noise=randn(10000,1);
+%    noise = sqrt(var(frame)) * (noise - mean(noise)) / std(noise) + mean(frame);
+        noise= 2 * (noise - min(noise)) / (max(noise) - min(noise)) - 1;
+    
+    cb_noise(:,i)=noise(length(noise)/2:length(noise)/2+frame_size-1);
+  
+    
+end
+  
+
+    %find the minimum euclidean distance in code book noise
+    euc_dis=zeros(cb_size,1);
+    for i=1:cb_size
+        
+            euc_dis(i)=sum((cb_noise(:,i)-frame).^2);     
+    end
+    
+     [~,idx1]=sort(euc_dis);
+     noise_idx=idx1(1);
+   
+
+
+
+    
 
 
 
