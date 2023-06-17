@@ -1,7 +1,7 @@
 %% Clear
 clear; close all; clc
 %% Read img data
-dat = imread('gray3.jpg');
+dat = imread('gray2.jpg');
 if size(dat, 3) == 3
     dat = rgb2gray(dat);
 end
@@ -31,7 +31,7 @@ title("Original IMG");
 H0 = [0.03489, -0.010983, -0.06286, 0.223907, 0.55686, 0.357976, -0.0239002, -0.0759409];
 % HPF coeffecient
 H1 = H0 .* -(-1).^(1:length(H0));
-de = 8;
+de = 4;
 c = 1;
 a = img;
 for i = 1:de

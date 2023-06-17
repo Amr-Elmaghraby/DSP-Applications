@@ -18,10 +18,10 @@ eig_val = diag(Diag);
 [eig_val, idx] = sort(eig_val, 'descend');
 
 % Extract the eigenvectors corresponding to the sorted eigenvalues
-eig_vec_sorted = eig_vec(:,idx);
+eig_vec = eig_vec(:,idx);
 
 % Normalize the eigenvectors to be orthonormal
-A = orth(eig_vec_sorted);
+A = orth(eig_vec);
 
 %% KLT
 KLT=zeros(1,10000);
@@ -70,17 +70,17 @@ subplot(3,1,3);
 stem(DCT(1:50));
 title("DCT Signal");
 
-%original and inverse signals
-
-figure;
-stem(x_n(1000:1050), 'x-');hold on ;
-stem(DCT_inv(1000:1050),'o-');hold off
-title("original signal Vs DCT inv signal ");
-legend('original signal','DCT inv signal');
-    
-
-stem(x_n(1000:1050), 'x-');hold on ;
-stem(KLT_inv(1000:1050),'o-');hold off
-title("original signal Vs KLT inv signal ");
-legend('original signal','KLT inv signal');
+% original and inverse signals
+% 
+% figure;
+% stem(x_n(1000:1050), 'x-');hold on ;
+% stem(DCT_inv(1000:1050),'o-');hold off
+% title("original signal Vs DCT inv signal ");
+% legend('original signal','DCT inv signal');
+%     
+% 
+% stem(x_n(1000:1050), 'x-');hold on ;
+% stem(KLT_inv(1000:1050),'o-');hold off
+% title("original signal Vs KLT inv signal ");
+% legend('original signal','KLT inv signal');
 

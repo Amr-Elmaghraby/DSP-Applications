@@ -26,8 +26,8 @@ cb_size=1024;
 
 cb_noise=zeros(length(T_frame),cb_size);
 for i=1:cb_size
-    noise=randn(10000,1);
-    noise = sqrt(var(tt)) * (noise - mean(noise)) / std(noise) + mean(tt);
+    noise=randn(10000,1)/5;
+%   noise = sqrt(var(T_frame)) * (noise - mean(noise)) / std(noise) + mean(T_frame);
     %   noise= 2 * (noise - min(noise)) / (max(noise) - min(noise)) - 1;
     
     cb_noise(:,i)=noise(length(noise)/2:length(noise)/2+frame_size-1);
@@ -55,6 +55,7 @@ for i=1:n_frames
     % get a frame from the data
     T_frame=data( ((i-1)*frame_size)+1 :i*frame_size);
     frame= T_frame;
+    
     AC = xcorr(T_frame);
     
     AC= AC(160:end);
@@ -90,10 +91,6 @@ for i=1:n_frames
     [T_frame , S_final ]=filter(S_lpc,1,T_frame,S_initial);
     S_initial=S_final;
     frame_ac=xcorr(T_frame);
-    if(i==100)
-        tt=T_frame;
-        plot(tt);
-    end
     
     %T_frame= (T_frame-mean(T_frame))/(std(T_frame));
     %T_frame = 2 * (T_frame - min(T_frame)) / (max(T_frame) - min(T_frame)) - 1;
@@ -131,7 +128,7 @@ for i=1:n_frames
     end
     
     RX_data=[RX_data; RX_frame];
-    
+ 
     
 end
 sound(RX_data)
