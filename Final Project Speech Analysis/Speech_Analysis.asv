@@ -63,6 +63,7 @@ CB_size = 2^10;
 
 
 PWR = zeros(1,N_frames);
+<<<<<<< HEAD
 LPC_taps = 11;
 L_initial = zeros(LPC_taps+1,1);
 S_initial = zeros(LPC_taps+1,1);
@@ -71,6 +72,16 @@ S_lar = zeros(LPC_taps+1,1);
 Lx_initial = zeros(LPC_taps+1,1);
 Sx_initial = zeros(LPC_taps+1,1);
 numBits = 8;
+=======
+LPC_taps = 12;
+L_initial = zeros(LPC_taps,1);
+S_initial = zeros(LPC_taps,1);
+L_lar = zeros(LPC_taps,1);
+S_lar = zeros(LPC_taps,1);
+Lx_initial = zeros(LPC_taps,1);
+Sx_initial = zeros(LPC_taps,1);
+numBits = 16;
+>>>>>>> ceb6314107c4b5ae82932b79789886999158dd57
 Received = "Unvoiced";
 
 % Preallocate RX_data
@@ -115,7 +126,7 @@ for i=1:N_frames
         L_initial=L_final;
         
         % Apply scalar quantization to the LPC coefficients
-%         L_lpc = quantizeLPC(L_lpc, numBits);
+        L_lpc = quantizeLPC(L_lpc, numBits);
         
     end
     
@@ -126,7 +137,7 @@ for i=1:N_frames
     AC_frame = xcorr(TX_frame);
     
     % Apply scalar quantization to the LPC coefficients
-%     S_lpc = quantizeLPC(S_lpc, numBits);
+    S_lpc = quantizeLPC(S_lpc, numBits);
     
     %find the minimum euclidean distance in code book noise
     ED = zeros(CB_size,1);
@@ -176,12 +187,16 @@ for i=1:N_frames
     RX_noise = scaling_factor * (RX_noise - mean_wgn) + mean_real_noise;
     
     %inverse short lpc
-    S_lpc = Filter_Stabilizer(S_lpc);
+%     S_lpc = Filter_Stabilizer(S_lpc);
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
     Sx_initial = Sx_final;
     
     if(Received == "voiced")
+<<<<<<< HEAD
          L_lpc = Filter_Stabilizer(L_lpc);
+=======
+%         L_lpc = Filter_Stabilizer(L_lpc);
+>>>>>>> ceb6314107c4b5ae82932b79789886999158dd57
         [RX_frame,Lx_final] = filter(1,L_lpc,RX_noise,Lx_initial);
         Lx_initial = Lx_final;
     end
