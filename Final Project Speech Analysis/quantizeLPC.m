@@ -1,5 +1,5 @@
 function [quantized_lpc] = quantizeLPC(lpcCoefficients, numBits)
-
+    
     % Scale the LPC coefficients to a suitable range for quantization
     scale = max(abs(lpcCoefficients));
     scaled_lpc = lpcCoefficients / scale;

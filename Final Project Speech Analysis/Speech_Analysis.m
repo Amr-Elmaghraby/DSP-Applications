@@ -14,8 +14,9 @@ pause(recDuration);
 %% get the data form the record
 
 data = getaudiodata(recobj);
-% % % % % % % % % % % % % % % % % % d = data==0;
-% % % % % % % % % % % % % % % % % % data(d)=0.01;
+% d = data == 0;
+% data(d) = 0.01;
+
 %plot the data
 fs = 8000;
 plot(data)
@@ -110,18 +111,22 @@ for i=1:N_frames
         %Long-term LPC parameters for voiced & unvoiced
         frame_x = [TX_frame(1); TX_frame(pitch-5:end)];
         L_lpc = lpc(frame_x,LPC_taps);
-        %         L_lpc = stabilizeLPC(L_lpc);  % Stabilize LPC coefficients
         [TX_frame ,L_final ]=filter(L_lpc,1,TX_frame,L_initial);
         L_initial=L_final;
+        
+        % Apply scalar quantization to the LPC coefficients
+%         L_lpc = quantizeLPC(L_lpc, numBits);
         
     end
     
     %short term lpc for both voiced and unvoiced frame
     S_lpc = lpc(TX_frame,LPC_taps);
     [TX_frame , S_final ]=filter(S_lpc,1,TX_frame,S_initial);
-    %     S_lpc = stabilizeLPC(S_lpc);  % Stabilize LPC coefficients
     S_initial=S_final;
     AC_frame = xcorr(TX_frame);
+    
+    % Apply scalar quantization to the LPC coefficients
+%     S_lpc = quantizeLPC(S_lpc, numBits);
     
     %find the minimum euclidean distance in code book noise
     ED = zeros(CB_size,1);
@@ -157,7 +162,6 @@ for i=1:N_frames
     RX_noise = CB_noise(:,noise_idx);
     %RX_noise = sqrt(var(TX_frame)) * (RX_noise - mean(RX_noise)) / std(RX_noise) + mean(TX_frame);
    
-   
     % Calculate the mean of the white Gaussian noise and the filtered output
     mean_wgn = mean(RX_noise);
     power_wgn = mean(RX_noise.^2);
@@ -165,25 +169,19 @@ for i=1:N_frames
     mean_real_noise = mean(TX_frame);
     power_real_noise = mean(TX_frame.^2);
 
-
     % Calculate the scaling factor to match the means
     scaling_factor = sqrt(power_real_noise / power_wgn);
 
     % Adjust the white Gaussian noise to match the mean and scaling
     RX_noise = scaling_factor * (RX_noise - mean_wgn) + mean_real_noise;
-
-    
-    % Apply scalar quantization to the LPC coefficients
-    S_lpc = quantizeLPC(S_lpc, numBits);
-    L_lpc = quantizeLPC(L_lpc, numBits);
     
     %inverse short lpc
-    S_lpc = Filter_Stabilizer(S_lpc);
+%     S_lpc = Filter_Stabilizer(S_lpc);
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
     Sx_initial = Sx_final;
     
     if(Received == "voiced")
-        L_lpc = Filter_Stabilizer(L_lpc);
+%         L_lpc = Filter_Stabilizer(L_lpc);
         [RX_frame,Lx_final] = filter(1,L_lpc,RX_noise,Lx_initial);
         Lx_initial = Lx_final;
     end
