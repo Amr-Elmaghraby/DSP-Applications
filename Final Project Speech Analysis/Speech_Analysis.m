@@ -55,7 +55,7 @@ for i=1:n_frames
             disp("voiced");
             
             %Long-term LPC parameters for voiced & unvoiced
-            frame_x = [ frame(1:5); frame(pitch-5:pitch+5)];
+            frame_x = [ frame(1:5); frame(pitch-5:end)];
             L_lpc = lpc(frame_x,lpc_taps);
             [frame_x ,L_final ]=filter(L_lpc,1,frame_x,L_intial);
             L_intial=L_final;
