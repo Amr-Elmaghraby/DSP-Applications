@@ -70,7 +70,7 @@ L_lar = zeros(LPC_taps,1);
 S_lar = zeros(LPC_taps,1);
 Lx_initial = zeros(LPC_taps,1);
 Sx_initial = zeros(LPC_taps,1);
-numBits = 8;
+numBits = 12;
 Received = "Unvoiced";
 
 % Preallocate RX_data
@@ -115,7 +115,7 @@ for i=1:N_frames
         L_initial=L_final;
         
         % Apply scalar quantization to the LPC coefficients
-%         L_lpc = quantizeLPC(L_lpc, numBits);
+        L_lpc = quantizeLPC(L_lpc, numBits);
         
     end
     
@@ -126,7 +126,7 @@ for i=1:N_frames
     AC_frame = xcorr(TX_frame);
     
     % Apply scalar quantization to the LPC coefficients
-%     S_lpc = quantizeLPC(S_lpc, numBits);
+    S_lpc = quantizeLPC(S_lpc, numBits);
     
     %find the minimum euclidean distance in code book noise
     ED = zeros(CB_size,1);
