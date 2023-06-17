@@ -61,6 +61,7 @@ for i=1:N_frames
 
     % Apply Hamming Window
     frame = Hamming_Window(data,hopSize,Frame_size,i);
+    
     if(sum(frame) == 0 )
         frame(1)= .1;
     end
@@ -135,6 +136,9 @@ for i=1:N_frames
         
     end
     
+<<<<<<< HEAD
+    % 4.Synthesis
+=======
 
     %T_frame= (T_frame-mean(T_frame))/(std(T_frame));
     %T_frame = 2 * (T_frame - min(T_frame)) / (max(T_frame) - min(T_frame)) - 1;
@@ -143,6 +147,7 @@ for i=1:N_frames
 
     %% 4.Synthesis
 
+>>>>>>> 16162eb920d83f5aa642d381746c188927fbef4f
     
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);

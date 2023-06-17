@@ -10,8 +10,7 @@ imshow(data)
 title('original');
 
 % Loop over different values of n which represent the number of bits
-
-    dataq = data;
+dataq = data;
     
 for n = 1:3
     
