@@ -21,14 +21,17 @@ plot(data)
 title('original speech')
 %apply low pass filter
 % %% low pass filter
+
 %
 % time=recDuration;
 % % Convert input sample to double and window it
+
 % startfilter=round((-3000-(-fs/2))*time+1);
 % endfilter=round((3000-(-fs/2))*time);
 % dataf=fftshift(fft(data));
 % dataf_lpf =dataf(startfilter:endfilter);
 % fs=length(dataf_lpf)/time;
+
 %
 % % Calculate DFT of of the audio file
 % data_lp=real(ifft(ifftshift(dataf_lpf)));
@@ -36,6 +39,7 @@ title('original speech')
 % plot(data_lp)
 
 % Define the frame parameters
+
 frame_time=20e-3;
 Frame_size=(frame_time/recDuration)*length(data);
 TX_frame=zeros(Frame_size,1);
@@ -72,11 +76,11 @@ RX_data = zeros(length(data), 1);
 
 %loop to simulate the data come in stream (realtime)
 for i=1:N_frames
-    
+
     % Apply Hamming Window
     frame = Hamming_Window(data,hopSize,Frame_size,i);
     TX_frame = frame;
-    
+
     % Auto_Corr for frame to detect have pitch period or not
     AC = xcorr(TX_frame);
     AC = AC(160:end);
@@ -187,12 +191,6 @@ filterOrder = 12; % Filter order (adjust as needed)
 filteredSignal = filter(b, a, RX_data);
 sound(filteredSignal)
 %%
-
-
-
-
-
-
 
 
 
