@@ -16,6 +16,8 @@ pause(recDuration);
 data = getaudiodata(recobj);
 
 %plot the data
+figure
+subplot(2,1,1)
 plot(data);
 title('original speech');
 
@@ -131,16 +133,27 @@ for i=1:N_frames
         % Obtain the roots of the LPC polynomial
         [lpcZeros,lpcRoots] = tf2zpk(1,S_lpc);
         % Obtain the zeros of the system by reciprocating the roots
-        figure;
-        zplane(lpcZeros,lpcRoots);   
+        
+        
     end
     
+<<<<<<< HEAD
     % 4.Synthesis
+=======
+
+    %T_frame= (T_frame-mean(T_frame))/(std(T_frame));
+    %T_frame = 2 * (T_frame - min(T_frame)) / (max(T_frame) - min(T_frame)) - 1;
+    
+    
+
+    %% 4.Synthesis
+
+>>>>>>> 16162eb920d83f5aa642d381746c188927fbef4f
     
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);
     %RX_noise = sqrt(var(TX_frame)) * (RX_noise - mean(RX_noise)) / std(RX_noise) + mean(TX_frame);
-   
+  
     % Calculate the mean of the white Gaussian noise and the filtered output
     mean_wgn = mean(RX_noise);
     power_wgn = mean(RX_noise.^2);
@@ -153,7 +166,9 @@ for i=1:N_frames
 
     % Adjust the white Gaussian noise to match the mean and scaling
     RX_noise = scaling_factor * ((RX_noise - mean_wgn) + mean_real_noise);
-    
+     
+   
+  
     %inverse short lpc
     S_lpc = Filter_Stabilizer(S_lpc);
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
@@ -172,9 +187,11 @@ for i=1:N_frames
     
     
 end
-%%
+
 sound(RX_data);
+subplot(2,1,2)
 plot(RX_data);
+title('Receiver Speech')
 
 %% low pass filter
 

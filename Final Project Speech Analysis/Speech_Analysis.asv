@@ -19,8 +19,15 @@ data(1:320)=;
 % data(d) = 0.01;
 
 %plot the data
+<<<<<<< HEAD
+figure
+subplot(2,1,1)
+plot(data);
+subtitle('original speech');
+=======
 plot(data);
 title('original speech');
+>>>>>>> 5ba2349092b1d832c7568de886e9be26e2a26c40
 
 % Define the frame parameters
 
@@ -37,7 +44,11 @@ N_frames = floor((length(data) - N_frames) / hopSize) + 1;
 %% 2.Generate codebooks
 
 % call codebook function
+<<<<<<< HEAD
+CB_size = 2^10;
+=======
 CB_size = 2^12;
+>>>>>>> 5ba2349092b1d832c7568de886e9be26e2a26c40
 CB_noise = Codebook(Frame_size,CB_size);
 
 
@@ -134,7 +145,7 @@ for i=1:N_frames
         [lpcZeros,lpcRoots] = tf2zpk(1,S_lpc);
         % Obtain the zeros of the system by reciprocating the roots
         figure;
-        zplane(lpcZeros,lpcRoots);   
+        
     end
     
     %T_frame= (T_frame-mean(T_frame))/(std(T_frame));
@@ -145,7 +156,7 @@ for i=1:N_frames
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);
     %RX_noise = sqrt(var(TX_frame)) * (RX_noise - mean(RX_noise)) / std(RX_noise) + mean(TX_frame);
-   
+  
     % Calculate the mean of the white Gaussian noise and the filtered output
     mean_wgn = mean(RX_noise);
     power_wgn = mean(RX_noise.^2);
@@ -158,9 +169,17 @@ for i=1:N_frames
 
     % Adjust the white Gaussian noise to match the mean and scaling
     RX_noise = scaling_factor * ((RX_noise - mean_wgn) + mean_real_noise);
+<<<<<<< HEAD
+     
+   
+  
+    %inverse short lpc
+     S_lpc = Filter_Stabilizer(S_lpc);
+=======
     
     %inverse short lpc
     S_lpc = Filter_Stabilizer(S_lpc);
+>>>>>>> 5ba2349092b1d832c7568de886e9be26e2a26c40
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
     Sx_initial = Sx_final;
     
@@ -178,7 +197,13 @@ for i=1:N_frames
     
 end
 sound(RX_data);
+<<<<<<< HEAD
+subplot(2,1
 plot(RX_data);
+title('Receiver Speech')
+=======
+plot(RX_data);
+>>>>>>> 5ba2349092b1d832c7568de886e9be26e2a26c40
 
 %% low pass filter
 

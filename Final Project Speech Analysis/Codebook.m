@@ -23,4 +23,3 @@ for i=1:CB_size
 end
 
 end
-
