@@ -155,7 +155,23 @@ for i=1:N_frames
     
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);
-    RX_noise = sqrt(var(TX_frame)) * (RX_noise - mean(RX_noise)) / std(RX_noise) + mean(TX_frame);
+    %RX_noise = sqrt(var(TX_frame)) * (RX_noise - mean(RX_noise)) / std(RX_noise) + mean(TX_frame);
+   
+   
+    % Calculate the mean of the white Gaussian noise and the filtered output
+    mean_wgn = mean(RX_noise);
+    power_wgn = mean(RX_noise.^2);
+
+    mean_real_noise = mean(TX_frame);
+    power_real_noise = mean(TX_frame.^2);
+
+
+    % Calculate the scaling factor to match the means
+    scaling_factor = sqrt(power_real_noise / power_wgn);
+
+    % Adjust the white Gaussian noise to match the mean and scaling
+    RX_noise = scaling_factor * (RX_noise - mean_wgn) + mean_real_noise;
+
     
     % Apply scalar quantization to the LPC coefficients
     S_lpc = quantizeLPC(S_lpc, numBits);
@@ -186,7 +202,7 @@ sound(RX_data);
 % Assuming 'reconstructedSignal' contains the concatenated frames
 
 % Define the filter parameters
-cutoffFreq = 3000; % Cutoff frequency in Hz
+cutoffFreq = 2500; % Cutoff frequency in Hz
 fs = 8000; % Sampling frequency in Hz
 filterOrder = 12; % Filter order (adjust as needed)
 

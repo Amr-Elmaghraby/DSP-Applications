@@ -1,0 +1,13 @@
+% Generate unstable filter coefficients
+unstable_coeffs = [1, -1.5, 0.7];
+
+% Create a random input signal
+input_signal = randn(1000, 1);
+
+% Apply the unstable filter to the input signal
+output_signal = filter(unstable_coeffs, 1, input_signal);
+[z,p] = tf2zpk(unstable_coeffs,1);
+zplane(z,p
+
+
+
