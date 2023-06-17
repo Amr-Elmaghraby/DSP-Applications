@@ -14,7 +14,8 @@ function [CB_noise, CB_size] = Codebook(Frame_size,CB_size)
 CB_noise=zeros(Frame_size,CB_size);
 
 for i=1:CB_size
-    noise=wgn(10000,1,1);
+     noise=wgn(10000,1,5e-5);
+    %noise=randn(10000,1);
     CB_noise(:,i)= noise(length(noise)/2:length(noise)/2+Frame_size-1);
 end
 
