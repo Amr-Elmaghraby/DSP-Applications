@@ -60,6 +60,7 @@ for i=1:N_frames
 
     % Apply Hamming Window
     frame = Hamming_Window(data,hopSize,Frame_size,i);
+    
     if(sum(frame) == 0 )
         frame(1)= .1;
     end
@@ -134,7 +135,7 @@ for i=1:N_frames
         zplane(lpcZeros,lpcRoots);   
     end
     
-    %% 4.Synthesis
+    % 4.Synthesis
     
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);
