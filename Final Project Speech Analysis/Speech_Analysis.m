@@ -10,12 +10,28 @@ disp('stop recording')
 % play the record
 play(recobj);
 pause(recDuration);
-
+%%
 % get the data form the record
 data = getaudiodata(recobj);
 %plot the data
+fs=8000;
 plot(data)
 title('original speech')
+%apply low pass filter
+% %% low pass filter
+% 
+% time=recDuration;
+% % Convert input sample to double and window it 
+% startfilter=round((-3000-(-fs/2))*time+1);
+% endfilter=round((3000-(-fs/2))*time);
+% dataf=fftshift(fft(data));
+% dataf_lpf =dataf(startfilter:endfilter);
+% fs=length(dataf_lpf)/time;
+% 
+% % Calculate DFT of of the audio file 
+% data_lp=real(ifft(ifftshift(dataf_lpf)));
+% sound(data_lp,fs);
+% plot(data_lp)
 % Define the frame size
 frame_time=20e-3;
 Frame_size=(frame_time/recDuration)*length(data);
@@ -51,7 +67,7 @@ RX_data = zeros(N_frames * Frame_size, 1);
 for i=1:N_frames
     
    % apply hamming window missing part  %
-    
+    TX_frame = data(((i-1)*Frame_size)+1 :i*Frame_size);
     % Auto_Corr for frame to detect have pitch period or not
    
     AC = xcorr(TX_frame);
@@ -73,7 +89,7 @@ for i=1:N_frames
     
     % check pitch period is within average range for being voiced
     PP = ((pitch/Frame_size)*frame_time)*1e3;
-    if(PP > 2.5)
+    if( (PP> 2.5) && ( PP<17.5 ) )
         disp("voiced");
         Received = "voiced";
         
@@ -142,10 +158,4 @@ end
 RX_data = RX_data(1:frameEndIndex);
  
 sound(RX_data)
-
-
-
-
-
-
 
