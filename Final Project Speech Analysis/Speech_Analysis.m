@@ -17,6 +17,7 @@ data = getaudiodata(recobj);
 
 %plot the data
 figure
+subplot(2,1,1);
 plot(data);
 title('original speech');
 
@@ -32,15 +33,13 @@ hopSize = round(Frame_size * (1 - overlapRatio));
 N_frames = floor((length(data) - N_frames) / hopSize) + 1;
 
 
-%% 2.Generate codebooks
+% 2.Generate codebooks
 
 % call codebook function
 CB_size = 2^10;
 CB_noise = Codebook(Frame_size,CB_size);
 
-
-%% 3.Start Analysis (TX)
-
+% 3.Start Analysis (TX)
 
 PWR = zeros(1,N_frames);
 LPC_taps = 12;
@@ -84,7 +83,6 @@ for i=1:N_frames
         end
     end
     
-    
     % check pitch period is within average range for being voiced
     PP = ((pitch/Frame_size)*frame_time)*1e3;
     if( (PP> 2.5) && ( PP<17.5 ) )
@@ -119,35 +117,9 @@ for i=1:N_frames
     
     % Sorting all distances and get index of first one
     [~,idx1] = sort(ED);
-    noise_idx = idx1(1);
+    noise_idx = idx1(1); 
     
-    %    % Get log area ratio of coff LPC
-    %     L_lar = rc2lar(L_lpc);
-    %     S_lar = rc2lar(S_lpc);
-    
-    if(i==100)
-        tt=TX_frame;
-        % Assuming 'lpcCoefficients' contains the LPC coefficients
-     
-        % Obtain the roots of the LPC polynomial
-        [lpcZeros,lpcRoots] = tf2zpk(1,S_lpc);
-        % Obtain the zeros of the system by reciprocating the roots
-        
-        
-    end
-    
-<<<<<<< HEAD
     % 4.Synthesis
-=======
-
-    %T_frame= (T_frame-mean(T_frame))/(std(T_frame));
-    %T_frame = 2 * (T_frame - min(T_frame)) / (max(T_frame) - min(T_frame)) - 1;
-    
-    
-
-    %% 4.Synthesis
-
->>>>>>> 16162eb920d83f5aa642d381746c188927fbef4f
     
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);
@@ -181,12 +153,11 @@ for i=1:N_frames
     startIdx = (i - 1) * hopSize + 1;
     endIdx = startIdx + Frame_size - 1;
     RX_data(startIdx:endIdx) = RX_data(startIdx:endIdx) + RX_frame;
-    
-    
+      
 end
 
 sound(RX_data);
-figure;
+subplot(2,1,2);
 plot(RX_data);
 title('Receiver Speech')
 
