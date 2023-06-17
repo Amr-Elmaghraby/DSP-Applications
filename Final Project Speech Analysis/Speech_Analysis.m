@@ -14,32 +14,10 @@ pause(recDuration);
 %% get the data form the record
 
 data = getaudiodata(recobj);
-% d = data == 0;
-% data(d) = 0.01;
 
 %plot the data
-fs = 8000;
-plot(data)
-title('original speech')
-
-%apply low pass filter
-% %% low pass filter
-
-%
-% time=recDuration;
-% % Convert input sample to double and window it
-
-% startfilter=round((-3000-(-fs/2))*time+1);
-% endfilter=round((3000-(-fs/2))*time);
-% dataf=fftshift(fft(data));
-% dataf_lpf =dataf(startfilter:endfilter);
-% fs=length(dataf_lpf)/time;
-
-%
-% % Calculate DFT of of the audio file
-% data_lp=real(ifft(ifftshift(dataf_lpf)));
-% sound(data_lp,fs);
-% plot(data_lp)
+plot(data);
+title('original speech');
 
 % Define the frame parameters
 
@@ -55,8 +33,9 @@ N_frames = floor((length(data) - N_frames) / hopSize) + 1;
 
 %% 2.Generate codebooks
 
-% generate coodbook
-[CB_noise, CB_size] = Codebook(Frame_size);
+% call codebook function
+CB_size = 2^10;
+CB_noise = Codebook(Frame_size,CB_size);
 
 
 %% 3.Start Analysis (TX)
@@ -75,13 +54,15 @@ Received = "Unvoiced";
 
 % Preallocate RX_data
 RX_data = zeros(length(data), 1);
-% RX_data = 0;
 
 %loop to simulate the data come in stream (realtime)
 for i=1:N_frames
 
     % Apply Hamming Window
     frame = Hamming_Window(data,hopSize,Frame_size,i);
+    if(sum(frame) == 0 )
+        frame(1)= .1;
+    end
     TX_frame = frame;
 
     % Auto_Corr for frame to detect have pitch period or not
@@ -110,7 +91,7 @@ for i=1:N_frames
         
         %Long-term LPC parameters for voiced & unvoiced
         frame_x = [TX_frame(1); TX_frame(pitch-5:end)];
-        L_lpc = lpc(frame_x,LPC_taps);
+        L_lpc = lpc(frame_x,LPC_taps).';
         [TX_frame ,L_final ]=filter(L_lpc,1,TX_frame,L_initial);
         L_initial=L_final;
         
@@ -120,7 +101,7 @@ for i=1:N_frames
     end
     
     %short term lpc for both voiced and unvoiced frame
-    S_lpc = lpc(TX_frame,LPC_taps);
+    S_lpc = lpc(TX_frame,LPC_taps).';
     [TX_frame , S_final ]=filter(S_lpc,1,TX_frame,S_initial);
     S_initial=S_final;
     AC_frame = xcorr(TX_frame);
@@ -153,10 +134,7 @@ for i=1:N_frames
         zplane(lpcZeros,lpcRoots);   
     end
     
-    %T_frame= (T_frame-mean(T_frame))/(std(T_frame));
-    %T_frame = 2 * (T_frame - min(T_frame)) / (max(T_frame) - min(T_frame)) - 1;
-    
-    % 4.Synthesis
+    %% 4.Synthesis
     
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);
@@ -173,15 +151,15 @@ for i=1:N_frames
     scaling_factor = sqrt(power_real_noise / power_wgn);
 
     % Adjust the white Gaussian noise to match the mean and scaling
-    RX_noise = scaling_factor * (RX_noise - mean_wgn) + mean_real_noise;
+    RX_noise = scaling_factor * ((RX_noise - mean_wgn) + mean_real_noise);
     
     %inverse short lpc
-%     S_lpc = Filter_Stabilizer(S_lpc);
+    S_lpc = Filter_Stabilizer(S_lpc);
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
     Sx_initial = Sx_final;
     
     if(Received == "voiced")
-%         L_lpc = Filter_Stabilizer(L_lpc);
+        L_lpc = Filter_Stabilizer(L_lpc);
         [RX_frame,Lx_final] = filter(1,L_lpc,RX_noise,Lx_initial);
         Lx_initial = Lx_final;
     end
@@ -193,7 +171,9 @@ for i=1:N_frames
     
     
 end
+%%
 sound(RX_data);
+plot(RX_data);
 
 %% low pass filter
 
@@ -209,5 +189,4 @@ filterOrder = 12; % Filter order (adjust as needed)
 
 % Apply the Butterworth filter to the signal
 filteredSignal = filter(b, a, RX_data);
-sound(filteredSignal)
-
+sound(filteredSignal);
