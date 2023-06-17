@@ -53,13 +53,13 @@ hopSize = round(Frame_size * (1 - overlapRatio));
 N_frames = floor((length(data) - N_frames) / hopSize) + 1;
 
 
-%% 2.Generate codebooks
+% 2.Generate codebooks
 
 % generate coodbook
 [CB_noise, CB_size] = Codebook(Frame_size);
 
 
-%% 3.Start Analysis (TX)
+% 3.Start Analysis (TX)
 
 
 PWR = zeros(1,N_frames);
@@ -173,15 +173,15 @@ for i=1:N_frames
     scaling_factor = sqrt(power_real_noise / power_wgn);
 
     % Adjust the white Gaussian noise to match the mean and scaling
-    RX_noise = scaling_factor * (RX_noise - mean_wgn) + mean_real_noise;
+    RX_noise = scaling_factor * ((RX_noise - mean_wgn) + mean_real_noise);
     
     %inverse short lpc
-%     S_lpc = Filter_Stabilizer(S_lpc);
+     S_lpc = Filter_Stabilizer(S_lpc);
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
     Sx_initial = Sx_final;
     
     if(Received == "voiced")
-%         L_lpc = Filter_Stabilizer(L_lpc);
+        L_lpc = Filter_Stabilizer(L_lpc);
         [RX_frame,Lx_final] = filter(1,L_lpc,RX_noise,Lx_initial);
         Lx_initial = Lx_final;
     end
@@ -194,6 +194,7 @@ for i=1:N_frames
     
 end
 sound(RX_data);
+plot(RX_data)
 
 %% low pass filter
 

@@ -13,21 +13,7 @@ outsideUnitCircle = abs(poles) > 1;
 % check if no poles out f unit circle retun from function without changing
 % lpc parameters
 %%
-if(sum(outsideUnitCircle)==0)
-    stable_coeff = unstable_coeffs;
-    return;
-end
-
-% 3. Scale the poles inside the unit circle
-scalingFactor = 0.99;
-poles(outsideUnitCircle) = (poles(outsideUnitCircle) ./ abs(poles(outsideUnitCircle))) * scalingFactor;
-
-% 4. Reconstruct the modified LPC coefficients
-stable_coeff = real(poly(poles));
-[z,poles] = tf2zpk(stable_coeff,1);
-figure
-zplane(z,poles)
-%%% Generate unstable filter coefficients
+% Generate unstable filter coefficients
 unstable_coeffs = [1, 1.5, -0.7];
 
 % Create a random input signal
