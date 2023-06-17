@@ -18,7 +18,6 @@ data = getaudiodata(recobj);
 % data(d) = 0.01;
 
 %plot the data
-fs = 8000;
 plot(data)
 title('original speech')
 
@@ -56,7 +55,8 @@ N_frames = floor((length(data) - N_frames) / hopSize) + 1;
 %% 2.Generate codebooks
 
 % generate coodbook
-[CB_noise, CB_size] = Codebook(Frame_size);
+CB_size = 2^10;
+[CB_noise, CB_size] = Codebook(Frame_size,CB_size);
 
 
 %% 3.Start Analysis (TX)
@@ -105,7 +105,7 @@ for i=1:N_frames
     % check pitch period is within average range for being voiced
     PP = ((pitch/Frame_size)*frame_time)*1e3;
     if( (PP> 2.5) && ( PP<17.5 ) )
-        disp("voiced");
+        %disp("voiced");
         Received = "voiced";
         
         %Long-term LPC parameters for voiced & unvoiced
@@ -141,13 +141,15 @@ for i=1:N_frames
     %    % Get log area ratio of coff LPC
     %     L_lar = rc2lar(L_lpc);
     %     S_lar = rc2lar(S_lpc);
-    
-    if(i==100)
+    if(isstable(1,S_lpc)==0||isstable(1,L_lpc)==0)
+        disp("unstable");
+    end
+    if(i==5)
         tt=TX_frame;
         % Assuming 'lpcCoefficients' contains the LPC coefficients
      
         % Obtain the roots of the LPC polynomial
-        [lpcZeros,lpcRoots] = tf2zpk(1,S_lpc);
+        flag=isstable(1,S_lpc)
         % Obtain the zeros of the system by reciprocating the roots
         figure;
         zplane(lpcZeros,lpcRoots);   
@@ -176,12 +178,12 @@ for i=1:N_frames
     RX_noise = scaling_factor * (RX_noise - mean_wgn) + mean_real_noise;
     
     %inverse short lpc
-%     S_lpc = Filter_Stabilizer(S_lpc);
+    S_lpc = Filter_Stabilizer(S_lpc);
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
     Sx_initial = Sx_final;
     
     if(Received == "voiced")
-%         L_lpc = Filter_Stabilizer(L_lpc);
+         L_lpc = Filter_Stabilizer(L_lpc);
         [RX_frame,Lx_final] = filter(1,L_lpc,RX_noise,Lx_initial);
         Lx_initial = Lx_final;
     end
