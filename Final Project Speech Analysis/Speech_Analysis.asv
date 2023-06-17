@@ -13,20 +13,25 @@ pause(recDuration);
 %%
 % get the data form the record
 data = getaudiodata(recobj);
+% % % % % % % % % % % % % % % % % % d = data==0;
+% % % % % % % % % % % % % % % % % % data(d)=0.01;
 %plot the data
 fs=8000;
 plot(data)
 title('original speech')
 %apply low pass filter
 % %% low pass filter
+
 %
 % time=recDuration;
 % % Convert input sample to double and window it
+
 % startfilter=round((-3000-(-fs/2))*time+1);
 % endfilter=round((3000-(-fs/2))*time);
 % dataf=fftshift(fft(data));
 % dataf_lpf =dataf(startfilter:endfilter);
 % fs=length(dataf_lpf)/time;
+
 %
 % % Calculate DFT of of the audio file
 % data_lp=real(ifft(ifftshift(dataf_lpf)));
@@ -34,6 +39,7 @@ title('original speech')
 % plot(data_lp)
 
 % Define the frame parameters
+
 frame_time=20e-3;
 Frame_size=(frame_time/recDuration)*length(data);
 TX_frame=zeros(Frame_size,1);
@@ -70,11 +76,11 @@ RX_data = zeros(length(data), 1);
 
 %loop to simulate the data come in stream (realtime)
 for i=1:N_frames
-    
+
     % Apply Hamming Window
     frame = Hamming_Window(data,hopSize,Frame_size,i);
     TX_frame = frame;
-    
+
     % Auto_Corr for frame to detect have pitch period or not
     AC = xcorr(TX_frame);
     AC = AC(160:end);
@@ -129,7 +135,7 @@ for i=1:N_frames
     %     L_lar = rc2lar(L_lpc);
     %     S_lar = rc2lar(S_lpc);
     %
-    if(i>10 && i<10)
+    if(i==100)
         tt=TX_frame;
         % Assuming 'lpcCoefficients' contains the LPC coefficients
      
@@ -147,7 +153,36 @@ for i=1:N_frames
     
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);
-    RX_noise = sqrt(var(TX_frame)) * (RX_noise - mean(RX_noise)) / std(RX_noise) + mean(TX_frame);
+    %RX_noise = sqrt(var(TX_frame)) * (RX_noise - mean(RX_noise)) / std(RX_noise) + mean(TX_frame);
+    % Calculate the mean and power of the white Gaussian noise
+    mean_wgn = mean(wgn_noise);
+    power_wgn = mean(wgn_noise.^2);
+
+    % Calculate the mean and power of the filtered output
+    mean_real_noise = mean(filtered_output);
+    power_realnoise = mean(filtered_output.^2);
+
+    % Adjust the mean and scaling factor to match the mean and power
+    mean_adjustment = mean_real_noise - mean_wgn;
+    scaling_factor = sqrt(power_realnoise / power_wgn);
+
+    % Adjust the white Gaussian noise to match the mean and power
+    wgn_noise_adjusted = scaling_factor * (wgn_noise - mean_wgn) + mean_real_noise + mean_adjustment;
+    
+    % Calculate the mean of the white Gaussian noise and the filtered output
+    mean_wgn = mean(RX_noise);
+    power_wgn = mean(wgn_noise.^2);
+
+    mean_real_noise = mean(TX_frame);
+    power_realnoise = mean(filtered_output.^2);
+
+
+    % Calculate the scaling factor to match the means
+    scaling_factor = mean_real_noise / mean_wgn ;
+
+    % Adjust the white Gaussian noise to match the mean and scaling
+    RX_noise = scaling_factor * (RX_noise - mean_wgn) + mean_real_noise;
+
     
     %inverse short lpc
     S_lpc = Filter_Stabilizer(S_lpc);
@@ -164,10 +199,6 @@ for i=1:N_frames
     startIdx = (i - 1) * hopSize + 1;
     endIdx = startIdx + Frame_size - 1;
     RX_data(startIdx:endIdx) = RX_data(startIdx:endIdx) + RX_frame;
-    % %     Store the reconstructed frame at the corresponding index
-    % %     frameStartIndex = (i - 1) * Frame_size + 1;
-    % %     frameEndIndex = i * Frame_size;
-    % %     RX_data(frameStartIndex:frameEndIndex) = RX_frame;
     
     
 end
@@ -187,14 +218,8 @@ filterOrder = 12; % Filter order (adjust as needed)
 
 % Apply the Butterworth filter to the signal
 filteredSignal = filter(b, a, RX_data);
-
+sound(filteredSignal)
 %%
-sound(RX_data)
-
-
-
-
-
 
 
 
