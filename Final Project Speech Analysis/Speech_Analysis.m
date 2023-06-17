@@ -22,17 +22,11 @@ TX_frame=zeros(Frame_size,1);
 N_frames=length(data)/Frame_size;
 
 
-% %% 2.Generate codebooks
-% 
-% CB_size=1024;
-% CB_noise=zeros(length(TX_frame),CB_size);
-% 
-% for i=1:CB_size
-%     noise=randn(10000,1);
-%     noise = sqrt(var(tt)) * (noise - mean(noise)) / std(noise) + mean(tt);
-%     %   noise= 2 * (noise - min(noise)) / (max(noise) - min(noise)) - 1;
-%     CB_noise(:,i)= noise(length(noise)/2:length(noise)/2+Frame_size-1);
-% end
+%% 2.Generate codebooks
+
+% generate coodbook
+    [CB_noise, CB_size] = Codebook(TX_frame , Frame_size);
+    
 
 %% 3.Start Analysis (TX)
 
@@ -45,6 +39,7 @@ L_lar = zeros(LPC_taps,1);
 S_lar = zeros(LPC_taps,1);
 Lx_initial = zeros(LPC_taps,1);
 Sx_initial = zeros(LPC_taps,1);
+
 % Preallocate RX_data
 RX_data = zeros(N_frames * Frame_size, 1);
 % RX_data = 0;
@@ -98,9 +93,6 @@ for i=1:N_frames
     S_lpc = stabilizeLPC(S_lpc);  % Stabilize LPC coefficients
     S_initial=S_final;
     AC_frame = xcorr(TX_frame);
-    
-    % generate coodbook
-    [CB_noise, CB_size] = Codebook(TX_frame , Frame_size);
     
     %find the minimum euclidean distance in code book noise
     ED = zeros(CB_size,1);
