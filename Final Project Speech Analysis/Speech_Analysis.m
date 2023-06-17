@@ -194,6 +194,8 @@ sound(RX_data);
 %% low pass filter
 
 % Assuming 'reconstructedSignal' contains the concatenated frames
+<<<<<<< HEAD
+=======
 
 % Define the filter parameters
 cutoffFreq = 2500; % Cutoff frequency in Hz
@@ -208,6 +210,16 @@ filteredSignal = filter(b, a, RX_data);
 sound(filteredSignal)
 %%
 
+>>>>>>> 50af58b91cd40877bd010953c34226b760d09787
 
+% Define the filter parameters
+cutoffFreq = 3000; % Cutoff frequency in Hz
+fs = 8000; % Sampling frequency in Hz
+filterOrder = 12; % Filter order (adjust as needed)
 
+% Design the Butterworth low-pass filter
+[b, a] = butter(filterOrder, cutoffFreq/(fs/2), 'low');
 
+% Apply the Butterworth filter to the signal
+filteredSignal = filter(b, a, RX_data);
+sound(filteredSignal)
