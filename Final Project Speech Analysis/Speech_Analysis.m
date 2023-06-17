@@ -70,7 +70,7 @@ L_lar = zeros(LPC_taps,1);
 S_lar = zeros(LPC_taps,1);
 Lx_initial = zeros(LPC_taps,1);
 Sx_initial = zeros(LPC_taps,1);
-numBits = 12;
+numBits = 10;
 Received = "Unvoiced";
 
 % Preallocate RX_data
