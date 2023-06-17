@@ -1,4 +1,4 @@
-function [CB_noise, CB_size] = Codebook(Frame_size,CB_size)
+function [CB_noise] = Codebook(Frame_size,CB_size)
 %_________________________________________________________________
 % Codebook That generate codebook of white noise
 

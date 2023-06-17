@@ -18,28 +18,8 @@ data = getaudiodata(recobj);
 % data(d) = 0.01;
 
 %plot the data
-fs = 8000;
-plot(data)
-title('original speech')
-
-%apply low pass filter
-% %% low pass filter
-
-%
-% time=recDuration;
-% % Convert input sample to double and window it
-
-% startfilter=round((-3000-(-fs/2))*time+1);
-% endfilter=round((3000-(-fs/2))*time);
-% dataf=fftshift(fft(data));
-% dataf_lpf =dataf(startfilter:endfilter);
-% fs=length(dataf_lpf)/time;
-
-%
-% % Calculate DFT of of the audio file
-% data_lp=real(ifft(ifftshift(dataf_lpf)));
-% sound(data_lp,fs);
-% plot(data_lp)
+plot(data);
+title('original speech');
 
 % Define the frame parameters
 
@@ -53,13 +33,14 @@ hopSize = round(Frame_size * (1 - overlapRatio));
 N_frames = floor((length(data) - N_frames) / hopSize) + 1;
 
 
-% 2.Generate codebooks
+%% 2.Generate codebooks
 
-% generate coodbook
-[CB_noise, CB_size] = Codebook(Frame_size);
+% call codebook function
+CB_size = 2^10;
+CB_noise = Codebook(Frame_size,CB_size);
 
 
-% 3.Start Analysis (TX)
+%% 3.Start Analysis (TX)
 
 
 PWR = zeros(1,N_frames);
@@ -75,7 +56,6 @@ Received = "Unvoiced";
 
 % Preallocate RX_data
 RX_data = zeros(length(data), 1);
-% RX_data = 0;
 
 %loop to simulate the data come in stream (realtime)
 for i=1:N_frames
@@ -156,7 +136,7 @@ for i=1:N_frames
     %T_frame= (T_frame-mean(T_frame))/(std(T_frame));
     %T_frame = 2 * (T_frame - min(T_frame)) / (max(T_frame) - min(T_frame)) - 1;
     
-    % 4.Synthesis
+    %% 4.Synthesis
     
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);
@@ -194,7 +174,7 @@ for i=1:N_frames
     
 end
 sound(RX_data);
-plot(RX_data)
+plot(RX_data);
 
 %% low pass filter
 
@@ -210,4 +190,4 @@ filterOrder = 12; % Filter order (adjust as needed)
 
 % Apply the Butterworth filter to the signal
 filteredSignal = filter(b, a, RX_data);
-sound(filteredSignal)
+sound(filteredSignal);
