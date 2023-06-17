@@ -14,8 +14,6 @@ pause(recDuration);
 %% get the data form the record
 
 data = getaudiodata(recobj);
-% d = data == 0;
-% data(d) = 0.01;
 
 %plot the data
 plot(data);
@@ -62,6 +60,9 @@ for i=1:N_frames
 
     % Apply Hamming Window
     frame = Hamming_Window(data,hopSize,Frame_size,i);
+    if(sum(frame) == 0 )
+        frame(1)= .1;
+    end
     TX_frame = frame;
 
     % Auto_Corr for frame to detect have pitch period or not
@@ -90,7 +91,7 @@ for i=1:N_frames
         
         %Long-term LPC parameters for voiced & unvoiced
         frame_x = [TX_frame(1); TX_frame(pitch-5:end)];
-        L_lpc = lpc(frame_x,LPC_taps);
+        L_lpc = lpc(frame_x,LPC_taps).';
         [TX_frame ,L_final ]=filter(L_lpc,1,TX_frame,L_initial);
         L_initial=L_final;
         
@@ -100,7 +101,7 @@ for i=1:N_frames
     end
     
     %short term lpc for both voiced and unvoiced frame
-    S_lpc = lpc(TX_frame,LPC_taps);
+    S_lpc = lpc(TX_frame,LPC_taps).';
     [TX_frame , S_final ]=filter(S_lpc,1,TX_frame,S_initial);
     S_initial=S_final;
     AC_frame = xcorr(TX_frame);
@@ -133,9 +134,6 @@ for i=1:N_frames
         zplane(lpcZeros,lpcRoots);   
     end
     
-    %T_frame= (T_frame-mean(T_frame))/(std(T_frame));
-    %T_frame = 2 * (T_frame - min(T_frame)) / (max(T_frame) - min(T_frame)) - 1;
-    
     %% 4.Synthesis
     
     %Selected CodeBook
@@ -156,7 +154,7 @@ for i=1:N_frames
     RX_noise = scaling_factor * ((RX_noise - mean_wgn) + mean_real_noise);
     
     %inverse short lpc
-     S_lpc = Filter_Stabilizer(S_lpc);
+    S_lpc = Filter_Stabilizer(S_lpc);
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
     Sx_initial = Sx_final;
     
@@ -173,6 +171,7 @@ for i=1:N_frames
     
     
 end
+%%
 sound(RX_data);
 plot(RX_data);
 
