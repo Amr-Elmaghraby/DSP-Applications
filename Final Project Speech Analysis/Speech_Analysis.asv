@@ -13,25 +13,20 @@ pause(recDuration);
 %%
 % get the data form the record
 data = getaudiodata(recobj);
-% % % % % % % % % % % % % % % % % % d = data==0;
-% % % % % % % % % % % % % % % % % % data(d)=0.01;
 %plot the data
 fs=8000;
 plot(data)
 title('original speech')
 %apply low pass filter
 % %% low pass filter
-
 %
 % time=recDuration;
 % % Convert input sample to double and window it
-
 % startfilter=round((-3000-(-fs/2))*time+1);
 % endfilter=round((3000-(-fs/2))*time);
 % dataf=fftshift(fft(data));
 % dataf_lpf =dataf(startfilter:endfilter);
 % fs=length(dataf_lpf)/time;
-
 %
 % % Calculate DFT of of the audio file
 % data_lp=real(ifft(ifftshift(dataf_lpf)));
@@ -39,7 +34,6 @@ title('original speech')
 % plot(data_lp)
 
 % Define the frame parameters
-
 frame_time=20e-3;
 Frame_size=(frame_time/recDuration)*length(data);
 TX_frame=zeros(Frame_size,1);
@@ -76,11 +70,11 @@ RX_data = zeros(length(data), 1);
 
 %loop to simulate the data come in stream (realtime)
 for i=1:N_frames
-
+    
     % Apply Hamming Window
     frame = Hamming_Window(data,hopSize,Frame_size,i);
     TX_frame = frame;
-
+    
     % Auto_Corr for frame to detect have pitch period or not
     AC = xcorr(TX_frame);
     AC = AC(160:end);
@@ -135,7 +129,7 @@ for i=1:N_frames
     %     L_lar = rc2lar(L_lpc);
     %     S_lar = rc2lar(S_lpc);
     %
-    if(i==100)
+    if(i>10 && i<10)
         tt=TX_frame;
         % Assuming 'lpcCoefficients' contains the LPC coefficients
      
@@ -170,6 +164,10 @@ for i=1:N_frames
     startIdx = (i - 1) * hopSize + 1;
     endIdx = startIdx + Frame_size - 1;
     RX_data(startIdx:endIdx) = RX_data(startIdx:endIdx) + RX_frame;
+    % %     Store the reconstructed frame at the corresponding index
+    % %     frameStartIndex = (i - 1) * Frame_size + 1;
+    % %     frameEndIndex = i * Frame_size;
+    % %     RX_data(frameStartIndex:frameEndIndex) = RX_frame;
     
     
 end
@@ -178,8 +176,6 @@ sound(RX_data);
 %% low pass filter
 
 % Assuming 'reconstructedSignal' contains the concatenated frames
-<<<<<<< HEAD
-=======
 
 % Define the filter parameters
 cutoffFreq = 3000; % Cutoff frequency in Hz
@@ -191,19 +187,15 @@ filterOrder = 12; % Filter order (adjust as needed)
 
 % Apply the Butterworth filter to the signal
 filteredSignal = filter(b, a, RX_data);
-sound(filteredSignal)
+
 %%
+sound(RX_data)
 
->>>>>>> 50af58b91cd40877bd010953c34226b760d09787
 
-% Define the filter parameters
-cutoffFreq = 3000; % Cutoff frequency in Hz
-fs = 8000; % Sampling frequency in Hz
-filterOrder = 12; % Filter order (adjust as needed)
 
-% Design the Butterworth low-pass filter
-[b, a] = butter(filterOrder, cutoffFreq/(fs/2), 'low');
 
-% Apply the Butterworth filter to the signal
-filteredSignal = filter(b, a, RX_data);
-sound(filteredSignal)
+
+
+
+
+
