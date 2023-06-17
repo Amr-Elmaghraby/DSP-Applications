@@ -10,15 +10,17 @@ disp('stop recording')
 % play the record
 play(recobj);
 pause(recDuration);
-%%
-% get the data form the record
+
+%% get the data form the record
+
 data = getaudiodata(recobj);
 % % % % % % % % % % % % % % % % % % d = data==0;
 % % % % % % % % % % % % % % % % % % data(d)=0.01;
 %plot the data
-fs=8000;
+fs = 8000;
 plot(data)
 title('original speech')
+
 %apply low pass filter
 % %% low pass filter
 
@@ -67,7 +69,7 @@ L_lar = zeros(LPC_taps,1);
 S_lar = zeros(LPC_taps,1);
 Lx_initial = zeros(LPC_taps,1);
 Sx_initial = zeros(LPC_taps,1);
-
+numBits = 8;
 Received = "Unvoiced";
 
 % Preallocate RX_data
@@ -134,7 +136,7 @@ for i=1:N_frames
     %    % Get log area ratio of coff LPC
     %     L_lar = rc2lar(L_lpc);
     %     S_lar = rc2lar(S_lpc);
-    %
+    
     if(i==100)
         tt=TX_frame;
         % Assuming 'lpcCoefficients' contains the LPC coefficients
@@ -155,6 +157,10 @@ for i=1:N_frames
     RX_noise = CB_noise(:,noise_idx);
     RX_noise = sqrt(var(TX_frame)) * (RX_noise - mean(RX_noise)) / std(RX_noise) + mean(TX_frame);
     
+    % Apply scalar quantization to the LPC coefficients
+    S_lpc = quantizeLPC(S_lpc, numBits);
+    L_lpc = quantizeLPC(L_lpc, numBits);
+    
     %inverse short lpc
     S_lpc = Filter_Stabilizer(S_lpc);
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
@@ -174,12 +180,10 @@ for i=1:N_frames
     
 end
 sound(RX_data);
-%apply low pass filter
+
 %% low pass filter
 
 % Assuming 'reconstructedSignal' contains the concatenated frames
-<<<<<<< HEAD
-=======
 
 % Define the filter parameters
 cutoffFreq = 3000; % Cutoff frequency in Hz
@@ -192,18 +196,4 @@ filterOrder = 12; % Filter order (adjust as needed)
 % Apply the Butterworth filter to the signal
 filteredSignal = filter(b, a, RX_data);
 sound(filteredSignal)
-%%
 
->>>>>>> 50af58b91cd40877bd010953c34226b760d09787
-
-% Define the filter parameters
-cutoffFreq = 3000; % Cutoff frequency in Hz
-fs = 8000; % Sampling frequency in Hz
-filterOrder = 12; % Filter order (adjust as needed)
-
-% Design the Butterworth low-pass filter
-[b, a] = butter(filterOrder, cutoffFreq/(fs/2), 'low');
-
-% Apply the Butterworth filter to the signal
-filteredSignal = filter(b, a, RX_data);
-sound(filteredSignal)
