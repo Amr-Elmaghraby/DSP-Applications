@@ -1,14 +1,15 @@
 %% 1.Get the data ready for analysis
-% close all ; clear ; clc
+close all ; clear ; clc
 
-% % get a record from user
-% recobj=audiorecorder;
-% recDuration= 3;
-% disp('start recording..')
-% recordblocking(recobj,recDuration);
-% disp('stop recording')
-% % play the record
-% play(recobj);
+% get a record from user
+recobj=audiorecorder;
+recDuration= 3;
+disp('start recording..')
+recordblocking(recobj,recDuration);
+disp('stop recording')
+% play the record
+play(recobj);
+pause(recDuration);
 
 % get the data form the record
 data = getaudiodata(recobj);
@@ -25,7 +26,7 @@ N_frames=length(data)/Frame_size;
 %% 2.Generate codebooks
 
 % generate coodbook
-    [CB_noise, CB_size] = Codebook(TX_frame , Frame_size);
+    [CB_noise, CB_size] = Codebook(Frame_size);
     
 
 %% 3.Start Analysis (TX)
@@ -40,6 +41,8 @@ S_lar = zeros(LPC_taps,1);
 Lx_initial = zeros(LPC_taps,1);
 Sx_initial = zeros(LPC_taps,1);
 
+Received = "Unvoiced";
+
 % Preallocate RX_data
 RX_data = zeros(N_frames * Frame_size, 1);
 % RX_data = 0;
@@ -47,22 +50,18 @@ RX_data = zeros(N_frames * Frame_size, 1);
 %loop to simulate the data come in stream (realtime)
 for i=1:N_frames
     
-    % get a frame from the data
-    TX_frame = data( ((i-1)*Frame_size)+1 :i*Frame_size);
-    
-    % Apply Hamming window to the frame
-    hamming_window = hamming(Frame_size);
-    TX_frame = TX_frame .* hamming_window;
+   % apply hamming window missing part  %
     
     % Auto_Corr for frame to detect have pitch period or not
-    frame= TX_frame;
+   
     AC = xcorr(TX_frame);
     AC = AC(160:end);
     PWR(i) = sum(TX_frame.^2)/Frame_size;
     
     % Sorting pitch periods (peaks) in signal
     [~, idx] = sort(AC,'descend');
-    
+    %initlaize pitch sample
+    pitch=1;
     % Detect pitch periods in frame 
     for j=1:length(idx)-1
         if(idx(j+1)>idx(j)+1)
@@ -81,7 +80,7 @@ for i=1:N_frames
         %Long-term LPC parameters for voiced & unvoiced
         frame_x = [TX_frame(1); TX_frame(pitch-5:end)];
         L_lpc = lpc(frame_x,LPC_taps);
-        L_lpc = stabilizeLPC(L_lpc);  % Stabilize LPC coefficients
+%         L_lpc = stabilizeLPC(L_lpc);  % Stabilize LPC coefficients
         [TX_frame ,L_final ]=filter(L_lpc,1,TX_frame,L_initial);
         L_initial=L_final;
         
@@ -90,7 +89,7 @@ for i=1:N_frames
     %short term lpc for both voiced and unvoiced frame
     S_lpc = lpc(TX_frame,LPC_taps);
     [TX_frame , S_final ]=filter(S_lpc,1,TX_frame,S_initial);
-    S_lpc = stabilizeLPC(S_lpc);  % Stabilize LPC coefficients
+%     S_lpc = stabilizeLPC(S_lpc);  % Stabilize LPC coefficients
     S_initial=S_final;
     AC_frame = xcorr(TX_frame);
     
@@ -143,7 +142,6 @@ end
 RX_data = RX_data(1:frameEndIndex);
  
 sound(RX_data)
-
 
 
 
