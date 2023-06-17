@@ -17,7 +17,6 @@ data = getaudiodata(recobj);
 
 %plot the data
 figure
-subplot(2,1,1)
 plot(data);
 title('original speech');
 
@@ -161,8 +160,6 @@ for i=1:N_frames
 
     % Adjust the white Gaussian noise to match the mean and scaling
     RX_noise = scaling_factor * ((RX_noise - mean_wgn) + mean_real_noise);
-     
-   
   
     %inverse short lpc
     S_lpc = Filter_Stabilizer(S_lpc);
@@ -184,7 +181,7 @@ for i=1:N_frames
 end
 
 sound(RX_data);
-subplot(2,1,2)
+figure;
 plot(RX_data);
 title('Receiver Speech')
 
