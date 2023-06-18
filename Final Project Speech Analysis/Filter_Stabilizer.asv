@@ -27,9 +27,6 @@ poles(outsideUnitCircle) = (poles(outsideUnitCircle) ./ abs(poles(outsideUnitCir
 
 % 4. Reconstruct the modified LPC coefficients
 if(length(poles)~=12)
-    M_lpc =  [real(poly(poles)) zeros(1,length(lpc)-length(poles)-1)];
-else
-    M_lpc = real(poly(poles));
-end
+M_lpc = real(poly(poles));
 end
 

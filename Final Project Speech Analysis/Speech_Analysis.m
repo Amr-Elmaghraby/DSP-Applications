@@ -10,11 +10,13 @@ disp('stop recording')
 % play the record
 play(recobj);
 pause(recDuration);
+%data = getaudiodata(recobj);
+%Fs = 8000;
+%% get the data form the Saved file
 
-%% get the data form the record
-
-data = getaudiodata(recobj);
-
+[data, Fs] = audioread("eric.wav");
+data = data(1:8.01*Fs,1);
+recDuration=length(data)/Fs;
 %plot the data
 figure
 subplot(2,1,1);
@@ -24,13 +26,13 @@ title('original speech');
 % Define the frame parameters
 
 frame_time=20e-3;
-Frame_size=(frame_time/recDuration)*length(data);
+Frame_size=round((frame_time/recDuration)*length(data));
 TX_frame=zeros(Frame_size,1);
 N_frames=length(data)/Frame_size;
 overlapRatio = 0.5;
 % Split the speech signal into frames with overlap
 hopSize = round(Frame_size * (1 - overlapRatio));
-N_frames = floor((length(data) - N_frames) / hopSize) + 1;
+N_frames = floor((length(data) - N_frames) / hopSize) ;
 
 
 % 2.Generate codebooks
@@ -51,28 +53,30 @@ Lx_initial = zeros(LPC_taps,1);
 Sx_initial = zeros(LPC_taps,1);
 numBits = 10;
 Received = "Unvoiced";
-
+x=0;
 % Preallocate RX_data
 RX_data = zeros(length(data), 1);
 
 %loop to simulate the data come in stream (realtime)
 for i=1:N_frames
-
+    
     % Apply Hamming Window
     frame = Hamming_Window(data,hopSize,Frame_size,i);
     
+    % check there's no frame with zeros values for all it's elements
     if(sum(frame) == 0 )
         frame(1)= .1;
     end
+    % TX_frame variable to contain frame
     TX_frame = frame;
-
+    
     % Auto_Corr for frame to detect have pitch period or not
     AC = xcorr(TX_frame);
-    AC = AC(160:end);
+    AC1 = AC(Frame_size:end);
     PWR(i) = sum(TX_frame.^2)/Frame_size;
     
     % Sorting pitch periods (peaks) in signal
-    [~, idx] = sort(AC,'descend');
+    [~, idx] = sort(AC1,'descend');
     %initlaize pitch sample
     pitch=1;
     % Detect pitch periods in frame
@@ -86,7 +90,6 @@ for i=1:N_frames
     % check pitch period is within average range for being voiced
     PP = ((pitch/Frame_size)*frame_time)*1e3;
     if( (PP> 2.5) && ( PP<17.5 ) )
-        disp("voiced");
         Received = "voiced";
         
         %Long-term LPC parameters for voiced & unvoiced
@@ -97,15 +100,19 @@ for i=1:N_frames
         
         % Apply scalar quantization to the LPC coefficients
         L_lpc = quantizeLPC(L_lpc, numBits);
+        AC = xcorr(TX_frame);
+        AC2 = AC(Frame_size:end);
         
     end
-    
+
     %short term lpc for both voiced and unvoiced frame
     S_lpc = lpc(TX_frame,LPC_taps).';
     [TX_frame , S_final ]=filter(S_lpc,1,TX_frame,S_initial);
     S_initial=S_final;
     AC_frame = xcorr(TX_frame);
-    
+    AC = xcorr(TX_frame);
+    AC3 = AC(Frame_size:end);
+
     % Apply scalar quantization to the LPC coefficients
     S_lpc = quantizeLPC(S_lpc, numBits);
     
@@ -117,49 +124,59 @@ for i=1:N_frames
     
     % Sorting all distances and get index of first one
     [~,idx1] = sort(ED);
-    noise_idx = idx1(1); 
+    noise_idx = idx1(1);
     
     % 4.Synthesis
     
     %Selected CodeBook
     RX_noise = CB_noise(:,noise_idx);
     %RX_noise = sqrt(var(TX_frame)) * (RX_noise - mean(RX_noise)) / std(RX_noise) + mean(TX_frame);
-  
+    
     % Calculate the mean of the white Gaussian noise and the filtered output
     mean_wgn = mean(RX_noise);
     power_wgn = mean(RX_noise.^2);
-
+    
     mean_real_noise = mean(TX_frame);
     power_real_noise = mean(TX_frame.^2);
-
+    
     % Calculate the scaling factor to match the means
     scaling_factor = sqrt(power_real_noise / power_wgn);
-
+    
     % Adjust the white Gaussian noise to match the mean and scaling
     RX_noise = scaling_factor * ((RX_noise - mean_wgn) + mean_real_noise);
-  
+    
     %inverse short lpc
     S_lpc = Filter_Stabilizer(S_lpc);
     [RX_frame,Sx_final] = filter(1,S_lpc,RX_noise,Sx_initial);
     Sx_initial = Sx_final;
-    
+    if(i==95)
+        L_lpc3 = L_lpc;
+    end
     if(Received == "voiced")
         L_lpc = Filter_Stabilizer(L_lpc);
         [RX_frame,Lx_final] = filter(1,L_lpc,RX_noise,Lx_initial);
         Lx_initial = Lx_final;
     end
-    
+    if(isstable(1,S_lpc)==0 || isstable(1,L_lpc)==0)
+        disp("unstalbe");
+        x=x+1;
+    end
     % Reconstruct the signal by overlapping and adding the frames
     startIdx = (i - 1) * hopSize + 1;
     endIdx = startIdx + Frame_size - 1;
     RX_data(startIdx:endIdx) = RX_data(startIdx:endIdx) + RX_frame;
-      
+    
 end
-
-sound(RX_data);
+sound(RX_data,Fs);
 subplot(2,1,2);
 plot(RX_data);
 title('Receiver Speech')
+figure;
+plot(AC1);
+figure;
+plot(AC2);
+figure;
+plot(AC3);
 
 %% low pass filter
 
@@ -176,3 +193,13 @@ filterOrder = 12; % Filter order (adjust as needed)
 % Apply the Butterworth filter to the signal
 filteredSignal = filter(b, a, RX_data);
 sound(filteredSignal);
+
+
+
+
+
+
+
+
+
+
